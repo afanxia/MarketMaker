@@ -1,3 +1,4 @@
+import logging as log
 
 class InDebt(Exception):
 	def __init__(self, code, amount):
@@ -10,6 +11,7 @@ class Portfolio:
 		"""Parameters:
 		dict starting_portfolio - needs to be an instance of defaultdict(lambda: 0)
 		"""
+		log.debug("Initation Portfolio Object")
 		self._holdings = starting_portfolio
 		
 	def get_amount(self, code):

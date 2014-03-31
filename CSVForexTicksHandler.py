@@ -7,9 +7,9 @@ from datetime import datetime
 import logging as log
 from numbers import Number
 
-log.basicConfig(level=log.DEBUG, format=
-	('%(asctime)s || %(levelname)s: %(filename)s:%(lineno)d - %(funcName)s: '
-		'%(message)s'))
+#log.basicConfig(level=log.DEBUG, format=
+#	('%(asctime)s || %(levelname)s: %(filename)s:%(lineno)d - %(funcName)s: '
+#		'%(message)s'))
 
 class DataNotAvailable(Exception):
 
@@ -22,6 +22,7 @@ class NoMoreDataAvailable(DataNotAvailable):
 class CSVForexTicksHandler(DataHandler):
 	
 	def __init__(self, directory, fxcodes, time = None):
+		log.debug("Initation CSVForexTicksHandler Object")
 		self._directory = directory
 		self._data = defaultdict(None)
 		self.fxcodes = fxcodes
