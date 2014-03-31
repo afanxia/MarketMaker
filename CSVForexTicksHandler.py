@@ -22,7 +22,7 @@ class NoMoreDataAvailable(DataNotAvailable):
 class CSVForexTicksHandler(DataHandler):
 	
 	def __init__(self, directory, fxcodes, time = None):
-		log.debug("Initation CSVForexTicksHandler Object")
+		log.debug("Initiating CSVForexTicksHandler Object")
 		self._directory = directory
 		self._data = defaultdict(None)
 		self.fxcodes = fxcodes

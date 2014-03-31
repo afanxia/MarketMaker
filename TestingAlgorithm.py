@@ -4,7 +4,7 @@ import logging as log
 class TestingAlgorithm(TradingAlgorithm):
 
 	def __init__(self, market, broker, portfolio):
-		log.debug("Initation TestingAlgorithm Object")
+		log.debug("Initiating TestingAlgorithm Object")
 		self.market = market
 		self.broker = broker
 		self.portfolio = portfolio

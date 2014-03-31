@@ -26,7 +26,7 @@ class Broker:
 	def __init__(self, market,
 		limit_storage_time = timedelta(days=10),
 		lag_time = timedelta(milliseconds=500)):
-		log.debug("Initation Broker Object")
+		log.debug("Initiating Broker Object")
 		self.market = market
 
 		self.market.data.tick.registerObserver(self.market_tick)
