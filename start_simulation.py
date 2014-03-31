@@ -1,5 +1,5 @@
 from Market import Market
-from TestingAlgorithm import TestingAlgorithm
+from TestingAlgorithms import BuyInTheMorning
 from CSVForexTicksHandler import CSVForexTicksHandler
 from Broker import Broker
 from Portfolio import Portfolio
@@ -13,6 +13,6 @@ datahandler = CSVForexTicksHandler(
     '/home/ioan/Dokumente/MarketMaker/marketmaker/histdata/',
     ['EURUSD'])
 
-market = Market('./simulations/', 'test', TestingAlgorithm,
+market = Market('./simulations/', 'test', BuyInTheMorning,
     datahandler, Broker, Portfolio)
 market.run(15)

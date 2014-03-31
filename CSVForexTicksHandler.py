@@ -33,6 +33,7 @@ class CSVForexTicksHandler(DataHandler):
 
 		self._comb_index = None
 		self._load_files(self._directory, self.fxcodes)
+		self._tick_time = 0
 		
 		if None == time:
 			self._time = self._comb_index[0]
@@ -95,6 +96,7 @@ class CSVForexTicksHandler(DataHandler):
 			.slice_indexer(time_temp, time_temp + time)]:
 			self._time = timepoint
 			self.tick.trigger(self)
+		self._tick_time = self._time
 		self._time = time_temp + time
 		self.time_change.trigger(self)
 
@@ -113,7 +115,8 @@ class CSVForexTicksHandler(DataHandler):
 	def get_current_tick(self, fxcode):
 		"""Return current tick
 		"""
-		row_location = self._comb_index.get_loc(self._time)
+		row_location = self._data[fxcode][:self._time].shape[0]
+			#self._comb_index.get_loc(self._tick_time)
 		i = 0
 		while not isinstance(
 			self._data[fxcode]['ask'].irow(row_location - i), Number):

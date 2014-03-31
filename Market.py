@@ -3,6 +3,9 @@ import os
 import sqlite3 as lite
 from signals import Signal
 from datetime import timedelta
+from collections import defaultdict
+from pprint import pprint
+from Portfolio import InDebt
 
 log.getLogger(__name__)
 
@@ -30,7 +33,13 @@ class Market:
 		
 		self.name = name
 		self.data = datahandler
-		TAlgorithm(self, Broker(self), Portfolio({'EUR': 50000}))
+		start_port = defaultdict(lambda: 0)
+		start_port['EUR'] = 50000
+		start_port['USD'] = 0 #shouldn't be nec. since it is a
+			#defaultdict, but somehow doesn't work elseways
+		self.talgo_port = Portfolio(start_port)
+		self.talgo = TAlgorithm(
+			self, Broker(self), self.talgo_port )
 
 #		self.database_path = directory + name + '.db'
 #		self.conn = lite.connect(database_path)
@@ -39,4 +48,13 @@ class Market:
 		log.info("Starting simulation %s", self.name)
 		time_intervall = timedelta(seconds=data_frequency)
 		while True == self.data.data_available:
-			self.data.update_current_time(time_intervall)
+			try:
+				self.data.update_current_time(time_intervall)
+			except InDebt as e:
+				log.info(e.message)
+				log.info("The Broker is configured to not allow you "
+				"to go in debt in any currency yet. Seems as if you "
+				"misscalculated :)")
+				print(self.talgo_port.get_portfolio())
+		log.info("Game ended, no more Data available")
+		print(self.talgo_port.get_portfolio())		
