@@ -5,6 +5,7 @@ from DataHandler import DataHandler
 from collections import defaultdict
 from datetime import datetime
 import logging as log
+from numbers import Number
 
 log.basicConfig(level=log.DEBUG, format=
 	('%(asctime)s || %(levelname)s: %(filename)s:%(lineno)d - %(funcName)s: '
@@ -74,7 +75,7 @@ class CSVForexTicksHandler(DataHandler):
 		for time in self._comb_index:
 			yield time
 	
-	def update_data_time(self, time):
+	def update_current_time(self, time):
 		"""
 		Updates the time at which the simulation is. Will forward current time,
 		afterwards all data until current time will be availabe
@@ -88,10 +89,12 @@ class CSVForexTicksHandler(DataHandler):
 			time = self._comb_index[-1] - self._time
 			self.data_available = False
 		time_temp = self._time
-		for timepoint in self._comb_index[time_temp: time_temp + time]:
+
+		for timepoint in self._comb_index[self._comb_index
+			.slice_indexer(time_temp, time_temp + time)]:
 			self._time = timepoint
 			self.tick.trigger(self)
-		self._time = time
+		self._time = time_temp + time
 		self.time_change.trigger(self)
 
 			
@@ -101,15 +104,25 @@ class CSVForexTicksHandler(DataHandler):
 		timedelta time - get latest data in time
 		"""
 		if time > self._time - self._start_time:
-			raise DataNotAvailable("You tried to retrieve data for last %s. "
-				"Only data for last %s is available" % (time, 
+			raise DataNotAvailable("You tried to retrieve data for last" 
+				" '%s'.Only data for last '%s' is available" % (time, 
 				self._time - self._start_time) )
 		return self._data[fxcode][self._time - time : self._time]
 		
 	def get_current_tick(self, fxcode):
 		"""Return current tick
 		"""
-		n = -1
-		while self._data[fxcode][n]['ask'] == NaN:
-			n -= 1
-		return self._data[fxcode][n]
+		row_location = self._comb_index.get_loc(self._time)
+		i = 0
+		while not isinstance(
+			self._data[fxcode]['ask'].irow(row_location - i), Number):
+			i += 1
+			if i > row_location:
+				raise DataNotAvailable("No data available for '%s' "
+					"the moment. It will probably be available later "
+					"in time" % fxcode)
+
+		return self._data[fxcode].irow(row_location - i)
+
+	def get_current_time(self):
+		return self._time
