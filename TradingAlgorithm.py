@@ -1,7 +1,12 @@
 from abc import ABCMeta, abstractmethod
 
 class TradingAlgorithm:
-	""" The trading Algorithm Class
+	""" The trading Algorithm Class - Parts of this documentation
+		are out-dated! Better look at Market, Broker and your
+		Datahandler
+
+
+
 		will be initialized by market object like this:
 		TradingAlgorithm(market-instance, broker-instance, portfolio-instance)
 	

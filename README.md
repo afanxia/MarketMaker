@@ -1,38 +1,18 @@
+#####MarketMaker
 
-Market Klasse ist Main Klasse sozusagen, sie bekommt referenzen zu der Broker-,
-Portfolio-, TradingAlgorithm-, DataHandler- Klasse und instanziert dann alle.
+###General Working Flow
+The Market class is the main Class which runs the simulation. In start_simulation you will find a quick overview of how a simulation could be started. Also, if you want to get, how this is working, start of in the Market.py class with reading the comments and then go on.
 
-DataHandler und TradingAlgortihm sind abstrakte Klassen, sind also nur dazu da
-um vererbt und erweitert zu werden.
+###How does a Trading Algorithm work
+Trading Algorithms are refered to as TAlgorithms or TAlgos often in the comments and here. At the moment, there is no standard how the TAlgo will be initlialized (in which order the Broker, portfolio, ... instances will be passed). So look into the market class to find out. You will be passed a Market instance (and through Market.data you'll have a DataHandler Instance through that too), a Broker Instance and a Portfolio instance.
+##For What do I need the Classes?
+#1. DataHandler
+In the DataHandler, which you can reference through Market.data, you should define a callback in your TAlgo and do Market.data.time_change.registerObserver(callback). The callback will be called every time, when new data is available. You can get that data through data.get_latest_data(fxcode, time) or data.get_current_tick(fxcode) (also functions of the DataHandler class)
+#2. Broker
+At the broker you are able to set limit and market orders. Also you can register as an observer (same way like with datahandler) to get information when an order is filled.
+#3. Portfolio
+Here you can view your current holdings. Also you need to pass by your portfolio to the broker often, so he knows which portfolio he has to charge when executing your orders
 
-TradingAlgorithm bekommt wenn er instanziert wird eine Broker instanz und eine
-Portfolio instanz. Das Portfolio gibt zu jedem Zeitpunkt aus, was die
-TradingAlgorithm-Instanz (von nun an Trader genannt) besitzt. Spaeter kann man
-z.B. hier die Analyse-Funktionen einbauen.
+For more information about how the classes work and how you can use them, please look at the classes themselves.
 
-Broker macht Orders und ueberprueft bei Limit Orders bei jedem Update der
-Daten, ob man sie erfuellen kann, sonst werden sie nach einer bestimmten 
-Zeitspanne geloescht.
-
-In der TradingAlgorithm Klasse sind viele Sachen auch nochmal
-ausfuehrlich erklaert.
-
-Der Market aktualisiert einfach nur in einer Dauerschleife den DataHandler,
-und ueber Market.change wird jeder darueber informiert (kind of
-Observer-Pattern, siehe Wikipedia).
-
-
-
-Zuerst hatte ich einen Yahoo Scraper 
-geschrieben, der im Minutentakt Ask/Bid Daten von Yahoo Finance holt und in
-eine SQLite Datenbank speichert und dazu dann den DataHandler 
-"LiteForexHandler", war gestern beim debuggen, und damit sollte das praktisch
-auch schon funktionieren. 
-
-Jedoch habe ich heute http://histdata.com gefunden, da gibts historische Tick-
-Datas, also besser gehts nicht :) Ist im CSV format, hab jetzt mit dem 
-CSVForexTicksHandler angefangen, der sollte auch so gut wie fertig sein. In der
-Broker Klasse muesste dann noch einiges geaendert werden, da er halt momentan
-auf minuetliche Ask/Bid Daten vom LiteForexHandler eingestellt ist, und nicht
-live-tick daten. Das erledige ich wahrscheinlich morgen. Hoffe, dass man ab
-morgen das ganze Backtesting-System dann funktioniert.
+[Here you can get even more free forex historical ticks data](http://www.histdata.com/download-free-forex-data/?/ascii/tick-data-quotes)

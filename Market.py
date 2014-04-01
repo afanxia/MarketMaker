@@ -15,28 +15,30 @@ log.getLogger(__name__)
 
 
 class Market:
-	"""Simulate a Stock market, either live or historical with participants"""
+	"""Main Class. Runs the Simulation as a whole"""
 	
-	def __init__(self, directory, name, TAlgorithm, 
-		datahandler, Broker, Portfolio):
+	def __init__(self, TAlgorithm, 
+		datahandler, Broker, Portfolio, name):
 		"""Initialize a new Stock Simulation
 		
 		Parameters:
-		string directory - the directory in which the simulator
-		string name - the name of this simulation. must be unique. will be
-			used as name of the database for this simulation
-		TAlgorithm - a class for a trading Algorithm
-		DataHandler - a instance of DataHandler class
-		Broker - a Broker class
-		Portfolio - a Portfolio class
+	
+		TAlgorithm - A Class which extends TradingAlgorithm. Will be run
+			as Trader in this simulation. Look at TradingAlgorithm
+			for information about what this class should contain
+		DataHandler - An instance of Class extending DataHandler. Look
+			at DataHandler class about how this classes should look like
+		Broker - A Class which will extend the Broker Class. Look at the
+			Broker class about how this classes should look like
+		Portfolio - a Reference to the Portfolio class
+		string name - name of the simulation. has no use yet
 		"""
 		
 		self.name = name
 		self.data = datahandler
 		start_port = defaultdict(lambda: 0)
 		start_port['EUR'] = 50000
-		start_port['USD'] = 0 #shouldn't be nec. since it is a
-			#defaultdict, but somehow doesn't work elseways
+
 		self.talgo_port = Portfolio(start_port)
 		self.talgo = TAlgorithm(
 			self, Broker(self), self.talgo_port )
@@ -45,6 +47,18 @@ class Market:
 #		self.conn = lite.connect(database_path)
 
 	def run(self, data_frequency):
+		"""Starts and runs the simulation. Will forward in time
+			`data_frequency` seconds. The broker will check each tick in
+			that time (check if limits are reached etc.). the trading
+			algorithm only gets a notification at the end of the forward
+			that means, `data_frequency` being 10 would mean, the
+			talgorithm would get notificated about new data every 10
+			seconds. he could then load all ticks of the last 10 secs
+			Parameters:
+			number data_frequency - the frequency in which the
+				talgorithm gets new data and is able to take action
+				upon that data
+		"""
 		log.info("Starting simulation %s", self.name)
 		time_intervall = timedelta(seconds=data_frequency)
 		while True == self.data.data_available:
@@ -55,6 +69,6 @@ class Market:
 				log.info("The Broker is configured to not allow you "
 				"to go in debt in any currency yet. Seems as if you "
 				"misscalculated :)")
-				print(self.talgo_port.get_portfolio())
+				break
 		log.info("Game ended, no more Data available")
 		print(self.talgo_port.get_portfolio())		

@@ -27,6 +27,8 @@ class Portfolio:
 		self._holdings[code] += amount
 		
 	def enough_available(self, code, amount):
+		"""A shortcut for `if amount <= portfolio.get_amount(code)`
+		"""
 		if self._holdings[code] >= amount:
 			return True
 		else:

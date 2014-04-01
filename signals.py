@@ -1,5 +1,9 @@
 class Signal:
-
+	"""A class which does something similar to the observer-pattern.
+		You can add this class to your object and other objects will
+		be able to register themself as observers. You can call trigger
+		to inform all observers that some event took place
+	"""
 	def __init__(self):
 		self._callbacks = []
 
