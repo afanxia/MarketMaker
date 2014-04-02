@@ -87,15 +87,15 @@ class TickBroker(Broker):
 		if order['kind'] == 'buy':
 			if order['amount'] == 0:
 				order['amount'] = order['portfolio'].get_amount(curr[0])
-			self._make_transaction_xchange(order['portfolio'], curr[0], 
-				-1 * order['amount']/tick['bid'], 
-				curr[1], order['amount'])
+			self._make_transaction_xchange(order['portfolio'],
+				curr[0], order['amount'],
+				curr[1], -1 * order['amount'] * tick['ask'])
 		elif order['kind'] == 'sell':
 			if order['amount'] == 0:
 				order['amount'] = order['portfolio'].get_amount(curr[1])
-			self._make_transaction_xchange(order['portfolio'], curr[0],
-				order['amount']/tick['ask'],
-				curr[1], -1 * order['amount'])
+			self._make_transaction_xchange(order['portfolio'],
+				curr[0], -1 * order['amount'],
+				curr[1], order['amount'] * tick['bid'])
 		else:
 			raise ValueError("order needs to be either sellout or an"
 			"amount has to be set")
