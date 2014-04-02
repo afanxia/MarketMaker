@@ -181,7 +181,7 @@ class CSVForexTicksHandler(DataHandler):
 		 = the current row-number in the DataFrame of all data for
 		fxcode which we are at.
 		'''
-		row_location = self._data[fxcode][:self._time].shape[0]
+		row_location = self._data[fxcode][:self._time].shape[0] - 1
 		i = 0
 		#go back until you find a column which actually contains data
 		while isnan(self._data[fxcode]['ask'].irow(row_location - i)):

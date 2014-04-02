@@ -35,6 +35,7 @@ class Market:
 		"""
 		
 		self.name = name
+		self.game_end = Signal()
 		self.data = datahandler
 		start_port = defaultdict(lambda: 0)
 		start_port['EUR'] = 50000
@@ -43,6 +44,8 @@ class Market:
 		self.talgo_port = Portfolio(start_port)
 		self.talgo = TAlgorithm(
 			self, self.broker, self.talgo_port )
+
+		self.date = None
 
 #		self.database_path = directory + name + '.db'
 #		self.conn = lite.connect(database_path)
@@ -64,6 +67,14 @@ class Market:
 		time_intervall = timedelta(seconds=data_frequency)
 		while True == self.data.data_available:
 			self.data.update_current_time(time_intervall)
+			if self.data.get_current_time().date() != self.date:
+				self.date = self.data.get_current_time().date()
+				log.info("Today is the %s. Your Portfolio is worth "
+				"%f€", self.date,
+				self.talgo_port.get_portfolio_value_in_eur(self.data))
 
 		log.info("Game ended, no more Data available")
+		self.game_end.trigger()
 		print(self.talgo_port.get_portfolio())
+		log.info("In EUR your portfolio is worth %f",
+			self.talgo_port.get_portfolio_value_in_eur(self.data))

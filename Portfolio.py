@@ -33,3 +33,10 @@ class Portfolio:
 			return True
 		else:
 			return False
+
+	def get_portfolio_value_in_eur(self, datahandler):
+		"""function atm only working because only using EURUSD as data
+		"""
+		tick = datahandler.get_current_tick('EURUSD')
+		return self._holdings['EUR'] + self._holdings['USD']/tick['ask']
+		return self._holdings['EUR'] + self._holdings['USD']/tick['ask']

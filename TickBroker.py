@@ -8,7 +8,7 @@ from Broker import Broker
 class NotEnoughMoney(InDebt):
 	def __init__(self, InDebtException, message):
 		self.code = InDebtException.code
-		self.amount = InDebtEnxception.amount
+		self.amount = InDebtException.amount
 		self.message = message
 
 class CurrencyNotForTrade(Exception):
@@ -72,8 +72,8 @@ class TickBroker(Broker):
 			portfolio.transact(curr1, amount1)
 			portfolio.transact(curr2, amount2)
 		except InDebt as e:
-			raise NotEnoughMoney(e, "You haven't got %f %s. Order can't "
-				"be filled" % (e.amount, e.code))
+			log.info("You are in debt, you ow %f %s",
+			e.amount, e.code)
 
 	def _fill_order_xchange(self, order):
 		"""Fill an order. Check if it is sell or buy, calculate the
@@ -86,13 +86,15 @@ class TickBroker(Broker):
 		curr = self._get_currencies_from_fxcode(order['fxcode'])
 		if order['kind'] == 'buy':
 			if order['amount'] == 0:
-				order['amount'] = order['portfolio'].get_amount(curr[0])
+				order['amount'] = order['portfolio'].get_amount(
+				curr[1])/tick['ask'] 
 			self._make_transaction_xchange(order['portfolio'],
 				curr[0], order['amount'],
 				curr[1], -1 * order['amount'] * tick['ask'])
 		elif order['kind'] == 'sell':
 			if order['amount'] == 0:
-				order['amount'] = order['portfolio'].get_amount(curr[1])
+				order['amount'] = order['portfolio'].get_amount(
+				curr[0])
 			self._make_transaction_xchange(order['portfolio'],
 				curr[0], -1 * order['amount'],
 				curr[1], order['amount'] * tick['bid'])
