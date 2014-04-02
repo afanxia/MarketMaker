@@ -32,7 +32,7 @@ class BuyInTheMorning(TradingAlgorithm):
 			self.order_filled)
 
 		self.bought_today = False
-		self.name = 'BuyInTheMorning'
+		self.my_orders = []
 
 
 	def time_changed(self, DataHandler):
@@ -40,22 +40,25 @@ class BuyInTheMorning(TradingAlgorithm):
 			time(6) < self.market.data.get_current_time().time() <
 			time(7)):
 			self.bought_today = True
-			order = {'trader_id':self.name, 'amount': 10000,
-				'fxcode':'EURUSD', 'kind': 'buy', 'type': 'market'}
-			self.broker.order_xchange(order, self.portfolio)
+			order = {'amount': 10000, 'fxcode':'EURUSD', 'kind': 'buy', 
+				'type': 'market'}
+			order_id = self.broker.order_xchange(order, self.portfolio)
+			self.my_orders.append(order_id)
 		elif (self.bought_today == True and
 			time(18) < self.market.data.get_current_time().time() <
 			time(19)):
 			self.bought_today = False
-			order = {'trader_id':self.name, 'amount': 0,
-				'fxcode':'EURUSD', 'kind': 'sell', 'type': 'market'}
-			self.broker.order_xchange(order, self.portfolio)
+			order = {'amount': 0, 'fxcode':'EURUSD', 'kind': 'sell', 
+				'type': 'market'}
+			order_id = self.broker.order_xchange(order, self.portfolio)
+			self.my_orders.append(order_id)
 
 	def order_filled(self, order):
-		if order['trader_id'] == self.name:
+		if order['id'] in self.my_orders:
 			log.info("My Order with id %d got filled",
 				order['id'])
-			print(order)			
+			print(order)
+			self.my_orders.remove(order['id'])		
 		
 class BuyWithAverage(TradingAlgorithm):
     """
