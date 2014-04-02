@@ -38,10 +38,11 @@ class Market:
 		self.data = datahandler
 		start_port = defaultdict(lambda: 0)
 		start_port['EUR'] = 50000
+		self.broker = Broker(self)
 
 		self.talgo_port = Portfolio(start_port)
 		self.talgo = TAlgorithm(
-			self, Broker(self), self.talgo_port )
+			self, self.broker, self.talgo_port )
 
 #		self.database_path = directory + name + '.db'
 #		self.conn = lite.connect(database_path)
@@ -62,13 +63,7 @@ class Market:
 		log.info("Starting simulation %s", self.name)
 		time_intervall = timedelta(seconds=data_frequency)
 		while True == self.data.data_available:
-			try:
-				self.data.update_current_time(time_intervall)
-			except InDebt as e:
-				log.info(e.message)
-				log.info("The Broker is configured to not allow you "
-				"to go in debt in any currency yet. Seems as if you "
-				"misscalculated :)")
-				break
+			self.data.update_current_time(time_intervall)
+
 		log.info("Game ended, no more Data available")
-		print(self.talgo_port.get_portfolio())		
+		print(self.talgo_port.get_portfolio())

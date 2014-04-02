@@ -22,8 +22,8 @@ class Portfolio:
 		return self._holdings
 		
 	def transact(self, code, amount):
-		if self._holdings[code] + amount < 0:
-			raise InDebt(code, amount)
+#		if self._holdings[code] + amount < 0:
+#			raise InDebt(code, amount)
 		self._holdings[code] += amount
 		
 	def enough_available(self, code, amount):
