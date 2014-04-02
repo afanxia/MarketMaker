@@ -53,10 +53,9 @@ class BuyInTheMorning(TradingAlgorithm):
 
 	def order_filled(self, order):
 		if order['trader_id'] == self.name:
-			log.info("One of my orders got filled")
-			print(order)
-			print(self.portfolio.get_portfolio())
-			
+			log.info("My Order with id %d got filled",
+				order['id'])
+			print(order)			
 		
 class BuyWithAverage(TradingAlgorithm):
     """
@@ -70,7 +69,7 @@ class BuyWithAverage(TradingAlgorithm):
         self.broker = broker
         self.portfolio = portfolio
         self.market.data.time_change.registerObserver(self.time_changed)
-        self.broker.order_fill.registerObserver(self.order_filled)
+        #self.broker.order_fill.registerObserver(self.order_filled)
         self.name = 'BuyWithAverage'
         self.latestBars = []
         self.avgBars = 500 #on how many of the latest bars do we calculate an average?
@@ -105,7 +104,7 @@ class BuyWithAverage(TradingAlgorithm):
             log.info("One of my orders got filled")
             print(order)
             print(self.portfolio.get_portfolio())
-        
+
     def _get_avg(self):
         """
         Simply calculates the average of the last self.avgBars bars.

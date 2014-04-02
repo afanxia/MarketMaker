@@ -16,7 +16,9 @@ class CurrencyNotForTrade(Exception):
 		self.message = message
 
 class TickBroker(Broker):
-	""" Broker handling the Order Dictionaries
+	""" Broker handling the Order, which are represented by python
+		Dictionaries
+		For TAlgos, if you pass an order to TickBroker.order_xchange,
 		ALL ORDERS dicts have to include keys:
 			string fxcode, int `amount`, `kind` ('buy'/'sell'),
 			`type` ('market'/'limit')
@@ -26,24 +28,45 @@ class TickBroker(Broker):
 	def __init__(self, market,
 		limit_storage_time = timedelta(days=10),
 		lag_time = timedelta(milliseconds=500)):
+		"""Initialize the broker
+			Parameters:
+			Market market - a market instance
+			timedelta limit_storage_time - a time span which limit
+				orders will be saved maximum
+			timdelta lag_time - the time which it will take to broker
+				to actually set a market order
+		"""
 		log.debug("Initiating Broker Object")
 		self.market = market
 
 		self.market.data.tick.registerObserver(self.market_tick)
 		self.market.data.time_change.registerObserver(self.market_tick)
 
-		self._orders = []
+		self._orders = {}
 		self._limit_storage_time = limit_storage_time
-		self._market_order_lag = lag_time
+		self._market_order_delay = lag_time
 
 		self.order_fill = Signal()
 		self.order_delete = Signal()
+		self._newest_order_id = -1
 
 	def get_max_limit_storage_time(self):
 		return self._limit_storage_time
 
-	def _make_transaction_xchange(self, portfolio, curr1, amount1, curr2, amount2):
-		"""
+	def _make_transaction_xchange(self, portfolio, curr1, amount1,
+		curr2, amount2):
+		"""Makes the actuall transaction in the portfolio
+			ParametersL
+			Portfolio portfolio - a portfolio instance on which the
+				transaction will happen
+			string curr1,2 - the currency codes (e.g. 'EUR') on which
+				the holdings should change
+			numer amount1,2 - amount`i` is the number which will be
+				added to your holdings of curr`i`
+
+			Normally either curr1 or curr2 will be negative and the
+			other one positive, because this is normally a transaction
+			from one currency into another
 		"""
 		try:
 			portfolio.transact(curr1, amount1)
@@ -53,6 +76,12 @@ class TickBroker(Broker):
 				"be filled" % (e.amount, e.code))
 
 	def _fill_order_xchange(self, order):
+		"""Fill an order. Check if it is sell or buy, calculate the
+			price for the given amount that should be bought/sold
+			and then make the transaction
+			Parameters:
+			dict order - a dicitonary representing an order
+		"""
 		tick = self.market.data.get_current_tick(order['fxcode'])
 		curr = self._get_currencies_from_fxcode(order['fxcode'])
 		if order['kind'] == 'buy':
@@ -85,19 +114,36 @@ class TickBroker(Broker):
 		self._check_open_orders()
 
 	def order_xchange(self, order, portfolio):
+		"""Make an Limit or Market order. Return the `order_id` which
+			the TAlgo can use to recognize the order later.
+			This method will only append the order to self._orders,
+			the actuall execution is done in _check_open_orders later
+		"""
+		self._newest_order_id += 1
 		order.update({'sector':'xchange', 'portfolio': portfolio})
 		order = self._check_order(order)
 		if order['type'] == 'market':
 			order['execute_time'] = (self.market.data.get_current_time()
-				+ self._market_order_lag)
-		self._orders.append(order)
+				+ self._market_order_delay)
+		self._orders[self._newest_order_id] = order
+		return self._newest_order_id
 	
 	def _check_open_orders(self):
-		for order in self._orders[:]:
+		"""Run through all orders in self._orders and check if they
+			expired or need to be executed. limit orders will be
+			executed when `limit` is reachend and deleted if `expires`
+			date is reached. Market orders will be executed after the
+			market order delay (simulates delay of your internet
+			connection) passed by. If order is executed or deleted, it
+			extends the order with the order-id so that the TAlgo
+			will recieve it in the event trigger and then deletes it
+		"""
+		for order_id, order in list(self._orders.items()):
 			if order['type'] == 'limit':
 				if order['expires'] < self.market.data.get_time():
+					order['id'] = order_id
 					self.order_delete.trigger(order)
-					self._orders.remove(order)
+					del self._orders[order_id]
 					continue
 				if (order['kind'] == 'buy' and 
 					self.market.data.get_current_tick(
@@ -105,13 +151,15 @@ class TickBroker(Broker):
 					order['kind'] == 'sell' and 
 					self.market.data.get_current_tick(
 					order['fxcode'])['ask'][0] <= order['limit']):
+					order['id'] = order_id
 					self._fill_order_xchange(order)
-					self._orders_remove(order)
+					del self._orders[order_id]
 			else:
 				if order['execute_time'] <= (self.market.
 					data.get_current_time()):
+					order['id'] = order_id
 					self._fill_order_xchange(order)
-					self._orders.remove(order)
+					del self._orders[order_id]
 				
 				
 	def _check_order(self, order):
