@@ -118,7 +118,7 @@ class CSVForexTicksHandler(DataHandler):
 			usecols = [0,1,2],
 			names=['datetime','ask','bid'],
 			parse_dates=True,
-			date_parser = self.date_parser #TODO: this takes ages!
+			date_parser = self.date_parser 
 		)
 		if self._comb_index is None:
 			self._comb_index = self._data[fxcode].index
@@ -126,7 +126,9 @@ class CSVForexTicksHandler(DataHandler):
 			self._comb_index.union(self._data[fxcode].index)	
 		
 	def date_parser(self, data):
-		return datetime.strptime(data, '%Y%m%d %H%M%S%f')
+		return datetime(int(data[0:4]), int(data[4:6]), int(data[6:8]),
+						int(data[9:11]), int(data[11:13]), int(data[13:15]),
+						int(data[15:18])*1000) #expects microsecond, we've mili
 
 	def update_current_time(self, time):
 		"""
